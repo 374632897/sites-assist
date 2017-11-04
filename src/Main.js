@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import './main.css'
+const qrcode = require('qrcode')
+// import QRCode from './qrcode';
 const inputState = {
   path: '/m/list/',
   st: 'http://service.st.example.com',
@@ -15,6 +17,9 @@ const headers = envDesc.concat(pathDesc);
 const initialState = {
   input: inputState,
   pathList: [], // { path: '', title: '', }
+  showQr: false,
+  qrcode: '',
+  qrurl: '',
 };
 const tbodyHeaders = pathDesc.concat(envDesc).concat('ops')
 
@@ -26,16 +31,35 @@ class Main extends Component {
     this.renderInput = this.renderInput.bind(this)
     this.renderTHeader = this.renderTHeader.bind(this)
     this.renderTBody = this.renderTBody.bind(this)
+    this.generateQrCode = this.generateQrCode.bind(this)
   }
-  updateInput (field, value) {
+  componentDidMount () {
+    // this.generateQrCode('https://noteawesome.com');
+  }
+  updateState (payload) {
     this.setState({
       ...this.state,
+      ...payload
+    });
+  }
+  generateQrCode (url) {
+    qrcode.toDataURL(url, (err, dataURL) => {
+      this.updateState({
+        qrcode: dataURL,
+        showQr: true,
+        qrurl: url,
+      });
+    });
+  }
+  updateInput (field, value) {
+    this.updateState({
       input: {
         ...this.state.input,
         [field]: value,
       }
     });
   }
+
   renderInput (field) {
     return (<label key={field}>
       <span>{field}</span>
@@ -56,16 +80,25 @@ class Main extends Component {
         return item[field];
       default:
         if (!this.state.input[field]) return '';
-        return (<a
-          target="_blank"
-          href={`${this.state.input[field]}${item.path}`}
-        >{field}</a>)
+        const uri = `${this.state.input[field]}${item.path}`;
+        return ([
+          <a
+            target="_blank"
+            key={1}
+            href={uri}
+            className="info"
+          >goto</a>,
+          <span
+            onClick={this.generateQrCode.bind(this, uri)}
+            key={2}
+            className="info"
+          >qrcode</span>
+        ])
     }
   }
 
   removePath (item) {
-    this.setState({
-      ...this.state,
+    this.updateState({
       pathList: this.state.pathList.filter(path =>
         (path.path !== item.path) ||
         (item.title !== path.title)
@@ -86,8 +119,7 @@ class Main extends Component {
   handleAdd () {
     const { path, title } = this.state.input;
     if (!path || !title) return alert('缺少 path 或者 title 参数');
-    this.setState({
-      ...this.state,
+    this.updateState({
       pathList: this.state.pathList.concat({ path, title }),
     });
   }
@@ -113,6 +145,18 @@ class Main extends Component {
             </tbody>
           </table>
         </section>
+        {this.state.showQr && <div className="mask">
+          <div className="qrcode" ref={node => (this.qrContainer = node)}>
+            <img src={this.state.qrcode} alt="生成二维码出错" />
+            <span
+              className="close"
+              onClick={() => this.updateState({
+                showQr: false,
+              })}
+            >×</span>
+            {this.state.qrurl}
+          </div>
+        </div>}
       </div>
     )
   }
