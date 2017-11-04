@@ -66,17 +66,21 @@ class Main extends Component {
   }
 
   renderInput (field) {
-    return (<label key={field}>
-      <span>{field}</span>
-      <input value={this.state.input[field]} onChange={(e) => {
-        this.updateInput(field, e.target.value);
-      }} title={this.state.input[field]} />
-    </label>)
+    return (
+      <label key={field}>
+        <span>{field}</span>
+        <input
+          value={this.state.input[field]}
+          title={this.state.input[field]}
+          onChange={(e) => {
+            this.updateInput(field, e.target.value);
+          }}
+        />
+      </label>
+    )
   }
   renderTHeader (field) {
-    return (<th key={field}>
-      {field}
-    </th>)
+    return (<th key={field}>{field}</th>)
   }
   getText (item, field) {
     switch (field) {
