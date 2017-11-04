@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import './main.css'
+import store from './store'
 const qrcode = require('qrcode')
 // import QRCode from './qrcode';
 const inputState = {
@@ -13,7 +14,6 @@ const inputState = {
 };
 const envDesc = 'st,prod,dev,local,test'.split(',');
 const pathDesc = ['path', 'title'];
-const headers = envDesc.concat(pathDesc);
 const initialState = {
   input: inputState,
   pathList: [], // { path: '', title: '', }
@@ -34,13 +34,18 @@ class Main extends Component {
     this.generateQrCode = this.generateQrCode.bind(this)
   }
   componentDidMount () {
-    // this.generateQrCode('https://noteawesome.com');
+    this.setState({
+      ...initialState,
+      ...store.get(),
+    });
   }
   updateState (payload) {
+    console.log('updateState')
     this.setState({
       ...this.state,
       ...payload
     });
+    store.set(this.state);
   }
   generateQrCode (url) {
     qrcode.toDataURL(url, (err, dataURL) => {
