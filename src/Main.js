@@ -67,8 +67,8 @@ class Main extends Component {
     this.setState({
       ...this.state,
       pathList: this.state.pathList.filter(path =>
-        path.path !== item.path &&
-        item.title !== path.title
+        (path.path !== item.path) ||
+        (item.title !== path.title)
       ),
     });
   }
