@@ -5,9 +5,9 @@ const qrcode = require('qrcode')
 // import QRCode from './qrcode';
 const inputState = {
   path: '/m/list/',
-  st: 'http://service.st.example.com',
-  prod: 'http://service.example.com',
-  dev: 'http://service.dev.example.com',
+  st: '',
+  prod: '',
+  dev: '',
   local: 'http://localhost:3000',
   test: 'http://service.test.example.com',
   title: '我的项目',
@@ -116,7 +116,7 @@ class Main extends Component {
   }
   renderTBody (item, index) {
     return (<tr key={index}>
-      {tbodyHeaders.slice(0, -1).map(field => (<td key={field}>
+      {tbodyHeaders.slice(0, -1).filter(item => this.state.input[item]).map(field => (<td key={field}>
         {this.getText(item, field)}
       </td>))}
       <td>
@@ -146,7 +146,7 @@ class Main extends Component {
           <table>
             <thead>
               <tr>
-                {tbodyHeaders.map(this.renderTHeader)}
+                {tbodyHeaders.filter(item => this.state.input[item]).concat('ops').map(this.renderTHeader)}
               </tr>
             </thead>
             <tbody>
