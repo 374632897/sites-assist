@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import './main.css'
 import store from './store'
+import uuid from 'uuid/v1'
 const qrcode = require('qrcode')
-// import QRCode from './qrcode';
 const inputState = {
   path: '/m/list/',
   st: '',
@@ -13,7 +13,7 @@ const inputState = {
   title: '我的项目',
 };
 const envDesc = 'st,prod,dev,local,test'.split(',');
-const pathDesc = ['path', 'title'];
+const pathDesc = ['title', 'path'];
 const initialState = {
   input: inputState,
   pathList: [], // { path: '', title: '', }
@@ -21,7 +21,9 @@ const initialState = {
   qrcode: '',
   qrurl: '',
 };
-const tbodyHeaders = pathDesc.concat(envDesc).concat('ops')
+const tbodyHeaders = pathDesc.concat(envDesc).concat('operate')
+
+const sortFunc = (a, b) => b.time - (a.time || 0);
 
 class Main extends Component {
   constructor (...args) {
@@ -34,13 +36,14 @@ class Main extends Component {
     this.generateQrCode = this.generateQrCode.bind(this)
   }
   componentDidMount () {
+    const { pathList, input } = store.get();
     this.setState({
       ...initialState,
-      ...store.get(),
+      input,
+      pathList: pathList.sort(sortFunc)
     });
   }
   updateState (payload) {
-    console.log('updateState')
     this.setState({
       ...this.state,
       ...payload
@@ -108,17 +111,23 @@ class Main extends Component {
 
   removePath (item) {
     this.updateState({
-      pathList: this.state.pathList.filter(path =>
-        (path.path !== item.path) ||
+      pathList: this.state.pathList.filter(path => {
+        if (item.hasOwnProperty('uuid')) {
+          return path.uuid !== item.uuid
+        };
+        return (path.path !== item.path) ||
         (item.title !== path.title)
-      ),
+      }),
     });
   }
   renderTBody (item, index) {
     return (<tr key={index}>
-      {tbodyHeaders.slice(0, -1).filter(item => this.state.input[item]).map(field => (<td key={field}>
-        {this.getText(item, field)}
-      </td>))}
+      {tbodyHeaders.slice(0, -1).filter(item => this.state.input[item]).map(field => {
+        const text = this.getText(item, field);
+        return (
+          <td key={field} title={text}>{text}</td>
+        )
+      })}
       <td>
         <span className="danger" onClick={this.removePath.bind(this, item)}>删除</span>
       </td>
@@ -129,7 +138,12 @@ class Main extends Component {
     const { path, title } = this.state.input;
     if (!path || !title) return alert('缺少 path 或者 title 参数');
     this.updateState({
-      pathList: this.state.pathList.concat({ path, title }),
+      pathList: this.state.pathList.concat({
+        path,
+        title,
+        time: Date.now(),
+        uuid: uuid(),
+      }).sort(sortFunc),
     });
   }
   render () {
@@ -146,7 +160,7 @@ class Main extends Component {
           <table>
             <thead>
               <tr>
-                {tbodyHeaders.filter(item => this.state.input[item]).concat('ops').map(this.renderTHeader)}
+                {tbodyHeaders.filter(item => this.state.input[item]).concat('operate').map(this.renderTHeader)}
               </tr>
             </thead>
             <tbody>

@@ -130,3 +130,10 @@ tbody tr:nth-child(even) {
   line-height: 23px;
   cursor: pointer;
 }
+table th:nth-child(2),
+table td:nth-child(2) {
+  max-width: 300px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
